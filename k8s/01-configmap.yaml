@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pos-integration-config
+  namespace: pos-integration
+data:
+  # Spring datasource (non-sensitive)
+  DB_URL: "jdbc:mysql://mysql-service:3306/pos_integration_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+  SERVER_PORT: "8080"
+  # SOAP endpoint
+  SOAP_ENDPOINT_URL: "http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso"
+  SOAP_WSDL_URL: "http://webservices.oorsprong.org/websamples.countryinfo/CountryInfoService.wso?WSDL"
+  # JPA
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+  SPRING_JPA_SHOW_SQL: "false"
+  # Logging
+  LOGGING_LEVEL_COM_NCBA_POS: "INFO"

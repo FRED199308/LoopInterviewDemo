@@ -1,0 +1,39 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pos-integration-ingress
+  namespace: pos-integration
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "60"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "60"
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "100"
+    # TLS redirect
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  # Uncomment and configure TLS for production:
+  # tls:
+  #   - hosts:
+  #       - pos-api.ncba.co.ke
+  #     secretName: pos-integration-tls
+  rules:
+    - host: pos-api.ncba.co.ke      # change to your domain
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: pos-integration-service
+                port:
+                  number: 80
+          - path: /actuator/health
+            pathType: Prefix
+            backend:
+              service:
+                name: pos-integration-service
+                port:
+                  number: 80

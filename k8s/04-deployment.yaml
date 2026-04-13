@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pos-integration
+  namespace: pos-integration
+  labels:
+    app: pos-integration
+    version: "1.0.0"
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+spec:
+  replicas: 2                      # Horizontal scaling – stateless service
+  selector:
+    matchLabels:
+      app: pos-integration
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0            # Zero-downtime deployment
+  template:
+    metadata:
+      labels:
+        app: pos-integration
+        version: "1.0.0"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        prometheus.io/port: "8080"
+    spec:
+      # Ensure pods spread across nodes for HA
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - pos-integration
+                topologyKey: kubernetes.io/hostname
+
+      initContainers:
+        # Wait for MySQL to be ready before starting the app
+        - name: wait-for-mysql
+          image: busybox:1.35
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z mysql-service 3306; do
+                echo "Waiting for MySQL...";
+                sleep 3;
+              done;
+              echo "MySQL is ready."
+
+      containers:
+        - name: pos-integration
+          image: ncba/pos-integration:1.0.0    # replace with your registry/image:tag
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: pos-integration-config
+          env:
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: pos-integration-secret
+                  key: DB_USERNAME
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pos-integration-secret
+                  key: DB_PASSWORD
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          # Liveness – restart if app is hung
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # Readiness – remove from load balancer if not ready
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # Startup – give extra time on cold start
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            failureThreshold: 12
+            periodSeconds: 10
+          volumeMounts:
+            - name: logs-volume
+              mountPath: /app/logs
+
+      volumes:
+        - name: logs-volume
+          emptyDir: {}
+
+      terminationGracePeriodSeconds: 30

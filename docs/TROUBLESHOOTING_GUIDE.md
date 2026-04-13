@@ -1,4 +1,4 @@
-# NCBA POS Integration – Kubernetes Troubleshooting Guide
+# LoopDFS POS Integration – Kubernetes Troubleshooting Guide
 
 ## Quick-Reference Diagnostic Commands
 

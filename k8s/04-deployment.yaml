@@ -58,7 +58,7 @@ spec:
 
       containers:
         - name: pos-integration
-          image: ncba/pos-integration:1.0.0    # replace with your registry/image:tag
+          image: loopdfsregistry.azurecr.io/pos-integration:1.0.0    # replace with your registry/image:tag
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

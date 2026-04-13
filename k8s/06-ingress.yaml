@@ -17,7 +17,7 @@ spec:
   # Uncomment and configure TLS for production:
   # tls:
   #   - hosts:
-  #       - pos-api.ncba.co.ke
+
   #     secretName: pos-integration-tls
   rules:
     - host: pos-api.ncba.co.ke      # change to your domain

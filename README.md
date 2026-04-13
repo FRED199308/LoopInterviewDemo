@@ -1,4 +1,4 @@
-# NCBA POS Integration Service
+# Loop DFS POS Integration Service
 
 A Spring Boot application that:
 1. Exposes a REST API to receive a country name
@@ -61,7 +61,7 @@ docker run -d \
   -e MYSQL_DATABASE=pos_integration_db \
   -e MYSQL_USER=posuser \
   -e MYSQL_PASSWORD=password \
-  -p 3306:3306 \
+  -p 3307:3307 \
   mysql:8.0
 
 # Wait ~15s, then verify
@@ -78,7 +78,7 @@ mvn clean package -DskipTests
 
 ```bash
 java -jar target/pos-integration-1.0.0.jar \
-  --spring.datasource.url=jdbc:mysql://localhost:3306/pos_integration_db?useSSL=false\&allowPublicKeyRetrieval=true \
+  --spring.datasource.url=jdbc:mysql://localhost:3307/pos_integration_db?useSSL=false\&allowPublicKeyRetrieval=true \
   --spring.datasource.username=root \
   --spring.datasource.password=password
 ```
@@ -221,7 +221,7 @@ pos-integration/
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DB_URL` | `jdbc:mysql://localhost:3306/pos_integration_db...` | JDBC URL |
+| `DB_URL` | `jdbc:mysql://localhost:3307/pos_integration_db...` | JDBC URL |
 | `DB_USERNAME` | `root` | DB username |
 | `DB_PASSWORD` | `password` | DB password |
 | `SERVER_PORT` | `8080` | HTTP server port |
